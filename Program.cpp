@@ -2,7 +2,10 @@
 #include <string>
 using namespace std;
 
-const int header_size       = 4;
+/* Define unsigned char as byte*/
+typedef unsigned char Byte;
+
+const int header_size       =  4;
 const int passwordHash_size = 20;
 const int metadata_size     = 24;
 
@@ -29,11 +32,12 @@ int main( int argc, char* argv[] ){
 
     /* 
         If the argument count is not 2,
-        It means a file has not been dragged onto the program's executable.
+        It means either more than one file or no file is given in input.
         Therefore, exit the program.
     */
     if ( argc !=  2 ){
         cout << "Please drag a file to this program's executable." << endl;
+        getchar();
         getchar();
         return -1;
     }
@@ -47,6 +51,7 @@ int main( int argc, char* argv[] ){
     if ( binaryFile == NULL ){
         cerr << "Failed to open the dragged binary file." << endl;
         getchar();
+        getchar();
         return -1;
     }
 
@@ -56,17 +61,13 @@ int main( int argc, char* argv[] ){
     fseek( binaryFile, 0, SEEK_SET);
 
     /* Create a byte array using dynamic memory allocation. */
-    unsigned char* byteArray = new unsigned char[ fileSize ];
+    Byte* byteArray = new Byte[ fileSize ];
 
     /*  Read all the bytes from the file into the byte array,
         and then close the dragged binary file.
     */
     fread( byteArray, fileSize, 1 , binaryFile );
     fclose(binaryFile);
-    
-    /* Now delete the original file*/
-    // remove(argv[1]);
-
 
     cout << "Enter 'E/e' for encryption or 'D/d' for Decryption " << endl;
     char choice; cin >> choice;
@@ -77,6 +78,7 @@ int main( int argc, char* argv[] ){
         if ( byteArray[0] == 'C' and byteArray[1] == 'r' and byteArray [2] == 'y' and byteArray[3] == 'x' ){
             cout << "This file is already encrypted by Cryx." << endl;
             getchar();
+            getchar();
             return -1;
         }
         
@@ -86,22 +88,22 @@ int main( int argc, char* argv[] ){
         string password; cin >> password;
         
         /* The encrypted file's extension is ".cryx" , so add it to the end of the file name.*/
-        string fileName = argv[1];
-        fileName = fileName + ".cryx";
+        string fileName = argv[1] + string(".cryx");
 
         /* Create a new empty binary file for writing.*/
         FILE* newBinaryFile = fopen( fileName.c_str() , "wb");
         if ( newBinaryFile == NULL ){
             cerr << "Failed to create new binary file" << endl;
             getchar();
+            getchar();
             return -1;
         }
 
         /* Encrypting bytes using the XOR cipher. */
         size_t length = password.length();
-        for ( int i = 0; i < (int) fileSize; i++ ){
+        for ( int i = 0; i < (int) fileSize; i++ )
             byteArray[i] = byteArray[i] ^ password[ i % length ];
-        }
+
 
         /*  Add the metadata in the first few bytes of the encrypted file.
             Metadata contains the header and the hash of the password, which is used to encrypt the file.
@@ -114,8 +116,8 @@ int main( int argc, char* argv[] ){
             So, we need to create a new array to hold both metadata and the encrypted bytes.
             
             Therefore, we needed to add the size of the metadata with the file size.*/
-        size_t newSize              = metadata_size + fileSize;
-        unsigned char* newByteArray = new unsigned char[ newSize ];
+        size_t newSize     = metadata_size + fileSize;
+        Byte* newByteArray = new Byte[ newSize ];
 
         /* First, store the metadata in the newByteArray.*/
         for ( int i = 0; i < (int)  metadata_size; i++ )
@@ -128,8 +130,8 @@ int main( int argc, char* argv[] ){
         /* Free the memory allocated by byteArray.*/
         delete byteArray;
 
-        /*  New write all the bytes into the newBinaryFile.
-            The newBinaryFile will contain metadata plus the encrypted bytes.
+        /*  Now write all the bytes into the newBinaryFile.
+            Then newBinaryFile will contain metadata plus the encrypted bytes.
             Then close the newBinaryFile and free the memory allocated by the newByteArray.
         */
         fwrite( newByteArray, newSize, 1, newBinaryFile );
@@ -140,15 +142,11 @@ int main( int argc, char* argv[] ){
         cout << "File succesfully encrypted and stored at: " << endl;
         cout << fileName << endl;
         getchar();
+        getchar();
         return 0;
     }
 
     else if ( choice == 'D' || choice == 'd' ){
-
-        /* Show the selected file and prompt for a password. */
-        cout << "Your select file is: " << argv[1] << endl;
-        cout << "Enter a password: ";
-        string password; cin >> password;
 
         /* First, we need to analyze the file's metadata.*/
         string metadata;
@@ -165,8 +163,14 @@ int main( int argc, char* argv[] ){
         if ( headerStoredInMetadata != "Cryx" ){
             cout << "Sorry! This file is not encrypted by Cryx." << endl;
             getchar();
+            getchar();
             return -1;
         }
+
+        /* Show the selected file and prompt for a password. */
+        cout << "Your select file is: " << argv[1] << endl;
+        cout << "Enter a password: ";
+        string password; cin >> password;
 
         /*  The hash of the password that was used to encrypt the file is stored in the metadata.
             If we enter the same password that was used to encrypt the file,
@@ -178,18 +182,19 @@ int main( int argc, char* argv[] ){
             cout << "Sorry! Wrong Password." << endl;
             cout << "Try again with the correct password." << endl;
             getchar();
+            getchar();
             return -1;
         }
 
         /*  Since the encrypted file contains both metadata and the encrypted bytes,
-            but only need the encrypted bytes and not the metadata.
+            but we only need the encrypted bytes and not the metadata.
             We create a newByteArray, which will only contain the encrypted bytes.
 
             Therefore, we needed to subtract the size of the metadata from the file size.
         */
 
-        size_t newSize              = fileSize - metadata_size;
-        unsigned char* newByteArray = new unsigned char[ newSize ];
+        size_t newSize      = fileSize - metadata_size;
+        Byte*  newByteArray = new Byte[ newSize ];
 
         /* Skip the metadata and store only the encrypted bytes in the newByteArray.*/
         for ( int i = metadata_size; i < (int) newSize; i++ )
@@ -205,7 +210,8 @@ int main( int argc, char* argv[] ){
         /* Create a newBinaryFile to write all the decrypted bytes.*/
         FILE* newBinaryFile = fopen( fileName.c_str() , "wb");
         if ( newBinaryFile == NULL ){
-            cerr << "Failed to crate new binary file" << endl;
+            cout << "Failed to crate new binary file" << endl;
+            getchar();
             getchar();
             return -1;
         }
@@ -226,6 +232,7 @@ int main( int argc, char* argv[] ){
         cout << "File successfuly decrypted and stored at: " << endl;
         cout << fileName << endl;
 
+        getchar();
         getchar();
         return 0;
     }
