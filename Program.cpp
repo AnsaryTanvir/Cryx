@@ -127,8 +127,6 @@ int main( int argc, char* argv[] ){
         for ( int i = metadata_size; i < (int) newSize; i++ )
             newByteArray[i] = byteArray[i-metadata_size];
         
-        /* Free the memory allocated by byteArray.*/
-        delete byteArray;
 
         /*  Now write all the bytes into the newBinaryFile.
             Then newBinaryFile will contain metadata plus the encrypted bytes.
@@ -200,9 +198,6 @@ int main( int argc, char* argv[] ){
         for ( int i = metadata_size; i < (int) newSize; i++ )
             newByteArray[i-metadata_size] = byteArray[i];
 
-        /* Deallocate the memory occupied by byteArray since we don't need it anymore.*/
-        delete byteArray;
-
         /* The decrypted file should have the extension "Cryx." removed, so remove it. */
         string fileName = argv[1];
         fileName.erase( fileName.size() - string("Cryx").length() );
@@ -232,6 +227,8 @@ int main( int argc, char* argv[] ){
         cout << "File successfuly decrypted and stored at: " << endl;
         cout << fileName << endl;
 
+        /* Delete the .cryx file*/
+        remove(argv[1]);
         getchar();
         getchar();
         return 0;
@@ -242,6 +239,6 @@ int main( int argc, char* argv[] ){
         getchar();
         return -1;
     }
-     
+
     return 0;
 }
