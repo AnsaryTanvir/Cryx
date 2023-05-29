@@ -49,7 +49,7 @@ int main( int argc, char* argv[] ){
     */
     FILE* binaryFile = fopen( argv[1] , "rb" );  /* The name of the dragged file is in argv[1]. */
     if ( binaryFile == NULL ){
-        cerr << "Failed to open the dragged binary file." << endl;
+        cout << "Failed to open the dragged binary file." << endl;
         getchar();
         getchar();
         return -1;
@@ -60,21 +60,24 @@ int main( int argc, char* argv[] ){
     size_t fileSize = ftell(binaryFile);
     fseek( binaryFile, 0, SEEK_SET);
 
-    /* Create a byte array using dynamic memory allocation. */
+    /* Create a Byte array using dynamic memory allocation. */
     Byte* byteArray = new Byte[ fileSize ];
 
     /*  Read all the bytes from the file into the byte array,
-        and then close the dragged binary file.
+        and then close the binary file.
     */
     fread( byteArray, fileSize, 1 , binaryFile );
     fclose(binaryFile);
 
+    /* Ask user for choice */
     cout << "Enter 'E/e' for encryption or 'D/d' for Decryption " << endl;
     char choice; cin >> choice;
 
     if ( choice == 'E' || choice == 'e' ){
 
-        /* Check if the file is already encrypted by Cryx. */
+        /*  If the file is already encrypted by Cryx.
+            then the header must be Cryx
+            So, exit the program. */
         if ( byteArray[0] == 'C' and byteArray[1] == 'r' and byteArray [2] == 'y' and byteArray[3] == 'x' ){
             cout << "This file is already encrypted by Cryx." << endl;
             getchar();
@@ -93,7 +96,7 @@ int main( int argc, char* argv[] ){
         /* Create a new empty binary file for writing.*/
         FILE* newBinaryFile = fopen( fileName.c_str() , "wb");
         if ( newBinaryFile == NULL ){
-            cerr << "Failed to create new binary file" << endl;
+            cout << "Failed to create new binary file" << endl;
             getchar();
             getchar();
             return -1;
@@ -134,7 +137,6 @@ int main( int argc, char* argv[] ){
         */
         fwrite( newByteArray, newSize, 1, newBinaryFile );
         fclose(newBinaryFile);
-        delete newByteArray;
 
         /* Show the success message and the destination where the encrypted file is stored.*/
         cout << "File succesfully encrypted and stored at: " << endl;
@@ -227,8 +229,9 @@ int main( int argc, char* argv[] ){
         cout << "File successfuly decrypted and stored at: " << endl;
         cout << fileName << endl;
 
-        /* Delete the .cryx file*/
+        /* Delete the encrypted .cryx file*/
         remove(argv[1]);
+
         getchar();
         getchar();
         return 0;
