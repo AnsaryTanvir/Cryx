@@ -26,16 +26,14 @@ string getStringHash(string str) {
     return hash;
 }
 
-
-
-int main( int argc, char* argv[] ){
+int main( int input_count, char* argv[] ){
 
     /* 
-        If the argument count is not 2,
+        If the input count is not 2,
         It means either more than one file or no file is given in input.
         Therefore, exit the program.
     */
-    if ( argc !=  2 ){
+    if ( input_count !=  2 ){
         cout << "Please drag a file to this program's executable." << endl;
         getchar();
         getchar();
