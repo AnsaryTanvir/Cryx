@@ -15,7 +15,7 @@ const int metadata_size     = 24;
  * @param str The input string to be hashed.
  * @return The hash value of the input string as a 20-character string.
  */
-string getStringHash(const string& str) {
+string getStringHash(string str) {
 
     string hash = to_string(std::hash<string>{}(str));
 
